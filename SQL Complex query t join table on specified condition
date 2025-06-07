@@ -1,0 +1,32 @@
+\\Subquery with the aggregator: to get the latest transaction
+\\Join with subquery: bring transaction details.
+\\Filtering and bussiness logic: on customer status and transaction amount
+\\Usefull for: Building data marts, dashboard, or summery table.
+
+
+
+SELECT 
+    c.customer_id,
+    c.customer_name,
+    t.transaction_id,
+    t.transaction_date,
+    t.amount
+FROM 
+    customers c
+JOIN 
+    (
+        SELECT 
+            customer_id,
+            MAX(transaction_date) AS max_transaction_date
+        FROM 
+            transactions
+        WHERE 
+            amount > 1000
+        GROUP BY 
+            customer_id
+    ) latest_txn ON c.customer_id = latest_txn.customer_id
+JOIN 
+    transactions t ON t.customer_id = latest_txn.customer_id 
+                   AND t.transaction_date = latest_txn.max_transaction_date
+WHERE 
+    c.status = 'ACTIVE';
